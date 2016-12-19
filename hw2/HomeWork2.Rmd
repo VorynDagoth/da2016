@@ -1,0 +1,28 @@
+---
+title: "ДЗ2"
+author: "Талапов Н./Абдулина Л."
+---
+
+#загрузка и очистка
+```{r}
+data <- read.csv("https://raw.githubusercontent.com/SergeyMirvoda/da2016/master/data/calif_penn_2011.csv");
+```
+загрузили данные в датафрейм 
+
+#количество строк и столбцов
+```{r}
+nrow(data)
+ncol(data)
+```
+вывод общего списка строк и столбцов
+
+```{r}
+colSums(apply(data,c(1,2), is.na))
+```
+поиск значений NA по таблице
+
+```{r}
+data<-na.omit(data)
+nrow(data)
+```
+удаление значений NA
