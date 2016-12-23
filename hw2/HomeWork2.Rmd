@@ -22,7 +22,155 @@ colSums(apply(data,c(1,2), is.na))
 поиск значений NA по таблице
 
 ```{r}
-data<-na.omit(data)
-nrow(data)
+na.omit(data)->Talapov
+nrow(data)-nrow(Talapov)
 ```
-удаление значений NA
+удаление значений NA, строк удалено - 670, не соответствует п.3
+
+#Новые дома
+
+Переменная(колонка) Built_2005_or_later содержит данные о проценте домов, построенных с 2005 года. Постройте диаграмму рассеяния (scatterplot) медианы стоимости домов (переменная Median_house_value) относительно процента новых домов.
+
+```{r}
+Built_2005 = data[,'Built_2005_or_later']
+Median_house = data[,'Median_house_value']
+plot(Talapov$Built_2005_or_later, Talapov$Median_house_valuex, xlab = "новые дома", ylab = "стоимости домов")
+```
+
+#Постройте ещё два графика для каждого из штатов отдельно. Номер штата содержится в переменной (STATEFP), где Калифорния 6-й штат, а Пенсильвания 42.
+
+Калифорния
+
+```{r}
+Built_2005 = data[,'Built_2005_or_later']
+Median_house = data[,'Median_house_value']
+plot(Talapov$Built_2005_or_later[Talapov$STATEFP == 6], Talapov$Median_house_value [Talapov$STATEFP == 6], xlab = "Процент новых домов", ylab = "Медиана стоимости домов")
+```
+
+Пенсильвания
+
+```{r}
+Built_2005 = data[,'Built_2005_or_later']
+Median_house = data[,'Median_house_value']
+plot(Talapov$Built_2005_or_later[Talapov$STATEFP == 42], Talapov$Median_house_value [Talapov$STATEFP == 42], xlab = "Процент новых домов", ylab = "Медиана стоимости домов")
+```
+
+#Незанятые дома
+
+Уровень найма (vacancy rate) — доля домов, которые не были заняты. В данных содержатся колонки, содержащие общее количество домовладений и количество не занятых домовладений.
+
+добавили vacancy_rate
+
+```{r}
+Talapov$Vacant_units/Talapov$Total_units->Talapov$Vacancy_rate
+```
+
+нашли минимум, максимум, среднее и медиану
+
+```{r}
+min(Talapov$Vacancy_rate)
+max(Talapov$Vacancy_rate)
+mean(Talapov$Vacancy_rate)
+median(Talapov$Vacancy_rate)
+```
+
+построили диаграмму 
+
+```{r}
+plot(Talapov$Median_house_value, Talapov$Vacancy_rate, xlab = "стоимость жилья", ylab = "найм")
+```
+дешёвые дома в приоритете
+
+#Корреляция
+
+Колонка COUNTYFP содержит числовой код округа внутри штата. Нас интересуют Butte County (округ 7 в Калифорнии), Santa Clara (округ 85 в Калифорнии) и York County (округ 133 в Пенсильвании).
+
+```{r}
+acc <- c()
+for (tract in 1:nrow(Talapov)) {
+  if (Talapov$STATEFP[tract] == 6) {
+    if (Talapov$COUNTYFP[tract] == 1) {
+      acc <- c(acc, tract)
+    }
+  }
+}
+accmv <- c()
+for (tract in acc) {
+  accmv <- c(accmv, Talapov[tract,10])
+}
+median(accmv)
+```
+в acc записываются домовладения в Калифорнии
+в acсm записывается стоимость домов 
+
+нашли средний процент (Butte County, Santa Clara, York County)
+
+```{r}
+mean(Talapov$Total_units[Talapov$STATEFP == 6 & Talapov$COUNTYFP == 7])
+mean(Talapov$Total_units[Talapov$STATEFP == 6 & Talapov$COUNTYFP == 85])
+mean(Talapov$Total_units[Talapov$STATEFP == 42 & Talapov$COUNTYFP == 133])
+```
+
+Функция cor рассчитывает коэффициент корреляции между двумя переменными. Рассчитайте корреляцию между медианы стоимости домовладений и процентом построенных домов:
+
+1) для всего набора данных
+
+```{r}
+cor(Talapov$Median_house_value, Talapov$Built_2005_or_later)
+```
+
+2) для Калифорнии
+
+```{r}
+cor(Talapov$Median_house_value [Talapov$STATEFP == 6], Talapov$Built_2005_or_later [Talapov$STATEFP == 6])
+```
+
+3) для Пенсильвании
+
+```{r}
+cor(Talapov$Median_house_value [Talapov$STATEFP == 42], Talapov$Built_2005_or_later [Talapov$STATEFP == 42])
+```
+
+4) для округа Butte County
+
+```{r}
+cor(Talapov$Median_house_value [Talapov$STATEFP == 6 & Talapov$COUNTYFP == 7], Talapov$Built_2005_or_later [Talapov$STATEFP == 6 & Talapov$COUNTYFP == 7])
+```
+
+5) для округа Santa Clara
+
+```{r}
+cor(Talapov$Median_house_value [Talapov$STATEFP == 6 & Talapov$COUNTYFP == 85], Talapov$Built_2005_or_later [Talapov$STATEFP == 6 & Talapov$COUNTYFP == 85])
+```
+
+6) для округа York County
+
+```{r}
+cor(Talapov$Median_house_value [Talapov$STATEFP == 42 & Talapov$COUNTYFP == 133], Talapov$Built_2005_or_later [Talapov$STATEFP == 42 & Talapov$COUNTYFP == 133])
+```
+
+Постройте три диаграммы медианы стоимости домовладений относительно медианы дохода для трёх округов.
+
+для округа Butte County
+
+```{r}
+Median_household = data[,'Median_household_income']
+Median_house = data[,'Median_house_value']
+plot(Talapov$Median_household_income [Talapov$STATEFP == 6 & Talapov$COUNTYFP == 7], Talapov$Median_house_value [Talapov$STATEFP == 6 & Talapov$COUNTYFP == 7], xlab="доход", ylab = "стоимость домов")
+```
+
+для округа Santa Clara
+
+```{r}
+Median_household = data[,'Median_household_income']
+Median_house = data[,'Median_house_value']
+plot(Talapov$Median_household_income [Talapov$STATEFP == 6 & Talapov$COUNTYFP == 85], Talapov$Median_house_value [Talapov$STATEFP == 6 & Talapov$COUNTYFP == 85], xlab="доход", ylab = "стоимость домов")
+```
+
+для округа York County
+
+```{r}
+Median_household = data[,'Median_household_income']
+Median_house = data[,'Median_house_value']
+plot(Talapov$Median_household_income [Talapov$STATEFP == 42 & Talapov$COUNTYFP == 133], Talapov$Median_house_value [Talapov$STATEFP == 42 & Talapov$COUNTYFP == 133], xlab="доход", ylab = "стоимости домов")
+```
